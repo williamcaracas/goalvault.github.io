@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalVault — Descargas de Partidos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* =============================================
+       GOALVAULT — ESTILOS GLOBALES
+       ============================================= */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0f;
+      --bg2:       #111114;
+      --bg3:       #151518;
+      --border:    #1e1e22;
+      --border2:   #2a2a30;
+      --text:      #e8e6e0;
+      --text2:     #888;
+      --text3:     #444;
+      --accent:    #4ade80;   /* verde principal */
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body:    'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* =============================================
+       HEADER
+       ============================================= */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+    .logo span { color: var(--accent); }
+
+    .header-meta {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+
+    /* =============================================
+       FILTROS
+       ============================================= */
+    .filters {
+      display: flex;
+      gap: 8px;
+      padding: 20px 32px 0;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: var(--font-body);
+    }
+    .pill:hover,
+    .pill.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(74,222,128,0.06);
+    }
+
+    /* =============================================
+       SECCIÓN
+       ============================================= */
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 28px 32px 12px;
+      font-weight: 500;
+    }
+
+    /* =============================================
+       LISTA DE PARTIDOS
+       ============================================= */
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* =============================================
+       CARD — PARTIDO
+
+       PARA AGREGAR UN PARTIDO NUEVO:
+       Copiá el bloque entre los comentarios
+       "PARTIDO INICIO" y "PARTIDO FIN"
+       y pegalo dentro del <div class="cards">
+       de la sección que corresponda.
+       ============================================= */
+    .card {
+      background: var(--bg);
+      padding: 20px 32px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+      transition: background 0.15s;
+    }
+    .card:hover { background: var(--bg2); }
+
+    .card-left  { display: flex; flex-direction: column; gap: 10px; }
+    .card-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; min-width: 220px; }
+
+    /* — Cabecera del partido — */
+    .match-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .comp-badge {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 500;
+      /* COLORES SUGERIDOS POR COMPETICIÓN:
+         Champions  → color:#4ade80
+         La Liga    → color:#f59e0b
+         Premier    → color:#60a5fa
+         Libertadores → color:#c084fc
+         Serie A    → color:#f87171
+         Selecciones  → color:#e2e8f0   */
+      color: var(--accent);
+    }
+
+    .dot {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--border2);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .match-date {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .new-badge {
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    /* — Equipos — */
+    .teams-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .team {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Escudo: podés reemplazar el emoji por un <img>
+       Ejemplo:
+       <img src="img/realmadrid.png"
+            style="width:28px;height:28px;border-radius:6px;object-fit:contain;">
+       o con URL externa:
+       <img src="https://ruta/al/escudo.png"
+            style="width:28px;height:28px;border-radius:6px;object-fit:contain;"> */
+    .shield {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .shield img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+    }
+
+    .team-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: #ddd;
+      white-space: nowrap;
+    }
+
+    .vs {
+      font-size: 10px;
+      color: var(--border2);
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    /* — Metadatos (duración, tamaño) — */
+    .meta-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    /* — Botones de calidad — */
+    .quality-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .q-btn {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      padding: 5px 11px;
+      border-radius: 5px;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.12s;
+      font-family: var(--font-body);
+    }
+    .q-btn:hover  { border-color: var(--accent); color: var(--accent); }
+    .q-btn.hq     { border-color: #3a3a42; color: #aaa; }
+    .q-btn.hq:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* — Botones de servidor — */
+    .source-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .src-btn {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      padding: 5px 11px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text3);
+      cursor: pointer;
+      transition: all 0.12s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-body);
+    }
+    .src-btn:hover { border-color: var(--border2); color: var(--text2); background: var(--bg2); }
+
+    /* =============================================
+       SEPARADOR DE FECHA
+       ============================================= */
+    .date-divider {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #2a2a2a;
+      padding: 20px 32px 10px;
+      font-weight: 500;
+    }
+
+    /* =============================================
+       FOOTER / CARGAR MÁS
+       ============================================= */
+    .load-more {
+      display: flex;
+      justify-content: center;
+      padding: 28px 0 48px;
+    }
+
+    .load-more-btn {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 10px 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: var(--font-body);
+    }
+    .load-more-btn:hover { border-color: var(--border2); color: var(--text2); }
+
+    /* =============================================
+       RESPONSIVE
+       ============================================= */
+    @media (max-width: 640px) {
+      .header   { padding: 16px 20px; }
+      .filters  { padding: 16px 20px 0; }
+      .card     { grid-template-columns: 1fr; padding: 18px 20px; }
+      .card-right { align-items: flex-start; }
+      .section-label, .date-divider { padding-left: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =============================================
+       HEADER
+       ============================================= -->
+  <header class="header">
+    <div class="logo">GOAL<span>VAULT</span></div>
+    <div class="header-meta">HD · Full Match · Sin cortes</div>
+  </header>
+
+  <!-- =============================================
+       FILTROS
+       Agregá más <button class="pill"> para nuevas competiciones
+       ============================================= -->
+  <div class="filters">
+    <button class="pill active" data-filter="all">Todos</button>
+    <button class="pill" data-filter="ucl">Champions</button>
+    <button class="pill" data-filter="laliga">La Liga</button>
+    <button class="pill" data-filter="premier">Premier</button>
+    <button class="pill" data-filter="libertadores">Libertadores</button>
+    <button class="pill" data-filter="seriea">Serie A</button>
+    <button class="pill" data-filter="selecciones">Selecciones</button>
+<button class="pill" data-filter="retro">Retro</button>
+  </div>
+
+  <!-- =============================================
+       SECCIÓN: RECIENTES
+       ============================================= -->
+  <div class="section-label">Recientes</div>
+
+  <div class="cards" id="lista-partidos">
+
+    <!-- ==========================================
+         PARTIDO INICIO — Real Madrid vs Man City
+         ========================================== -->
+    <div class="card" data-comp="ucl">
+      <div class="card-left">
+        <div class="match-header">
+          <span class="comp-badge" style="color:#4ade80;">⬡ UCL · Cuartos</span>
+          <span class="dot"></span>
+          <span class="match-date">15 Abr 2025</span>
+          <span class="new-badge">Nuevo</span>
+        </div>
+        <div class="teams-row">
+          <div class="team">
+            <!-- Reemplazá el emoji por <img src="..."> cuando tengas el escudo -->
+            <div class="shield" style="background:#0a0a1a;">🔵</div>
+            <span class="team-name">Real Madrid</span>
+          </div>
+          <span class="vs">VS</span>
+          <div class="team">
+            <div class="shield" style="background:#0d001a;">🟣</div>
+            <span class="team-name">Manchester City</span>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="meta-item">◷ 95 min</div>
+          <div class="meta-item">▣ 8.4 GB · 1080p</div>
+          <div class="meta-item">▣ 3.2 GB · 720p</div>
+        </div>
+      </div>
+      <div class="card-right">
+        <!-- Calidad: reemplazá # con el link real. Quitá las líneas que no tengas. -->
+        <div class="quality-row">
+          <a href="#" class="q-btn hq">4K</a>
+          <a href="#" class="q-btn hq">1080p</a>
+          <a href="#" class="q-btn">720p</a>
+          <a href="#" class="q-btn">480p</a>
+        </div>
+        <!-- Servidor: reemplazá # con el link real. Quitá las líneas que no tengas. -->
+        <div class="source-row">
+          <a href="#" class="src-btn">▲ Drive</a>
+          <a href="#" class="src-btn">◆ Mega</a>
+          <a href="#" class="src-btn">⬡ Torrent</a>
+        </div>
+      </div>
+    </div>
+    <!-- ==========================================
+         PARTIDO FIN — Real Madrid vs Man City
+         ========================================== -->
+
+    <!-- ==========================================
+         PARTIDO INICIO — Atlético vs Barcelona
+         ========================================== -->
+    <div class="card" data-comp="laliga">
+      <div class="card-left">
+        <div class="match-header">
+          <span class="comp-badge" style="color:#f59e0b;">⬡ La Liga · J32</span>
+          <span class="dot"></span>
+          <span class="match-date">13 Abr 2025</span>
+          <span class="new-badge">Nuevo</span>
+        </div>
+        <div class="teams-row">
+          <div class="team">
+            <div class="shield" style="background:#1a0000;">🔴</div>
+            <span class="team-name">Atlético Madrid</span>
+          </div>
+          <span class="vs">VS</span>
+          <div class="team">
+            <div class="shield" style="background:#001a0a;">🟢</div>
+            <span class="team-name">Barcelona</span>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="meta-item">◷ 97 min</div>
+          <div class="meta-item">▣ 7.8 GB · 1080p</div>
+          <div class="meta-item">▣ 3.0 GB · 720p</div>
+        </div>
+      </div>
+      <div class="card-right">
+        <div class="quality-row">
+          <a href="#" class="q-btn hq">1080p</a>
+          <a href="#" class="q-btn">720p</a>
+          <a href="#" class="q-btn">480p</a>
+        </div>
+        <div class="source-row">
+          <a href="#" class="src-btn">▲ Drive</a>
+          <a href="#" class="src-btn">◆ Mega</a>
+          <a href="#" class="src-btn">⬡ Torrent</a>
+        </div>
+      </div>
+    </div>
+    <!-- ==========================================
+         PARTIDO FIN — Atlético vs Barcelona
+         ========================================== -->
+
+    <!-- ==========================================
+         PARTIDO INICIO — Arsenal vs Liverpool
+         ========================================== -->
+    <div class="card" data-comp="premier">
+      <div class="card-left">
+        <div class="match-header">
+          <span class="comp-badge" style="color:#60a5fa;">⬡ Premier · J35</span>
+          <span class="dot"></span>
+          <span class="match-date">12 Abr 2025</span>
+        </div>
+        <div class="teams-row">
+          <div class="team">
+            <div class="shield" style="background:#1a0000;">🔴</div>
+            <span class="team-name">Arsenal</span>
+          </div>
+          <span class="vs">VS</span>
+          <div class="team">
+            <div class="shield" style="background:#1a0000;">🔴</div>
+            <span class="team-name">Liverpool</span>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="meta-item">◷ 93 min</div>
+          <div class="meta-item">▣ 8.1 GB · 1080p</div>
+          <div class="meta-item">▣ 3.1 GB · 720p</div>
+        </div>
+      </div>
+      <div class="card-right">
+        <div class="quality-row">
+          <a href="#" class="q-btn hq">4K</a>
+          <a href="#" class="q-btn hq">1080p</a>
+          <a href="#" class="q-btn">720p</a>
+          <a href="#" class="q-btn">480p</a>
+        </div>
+        <div class="source-row">
+          <a href="#" class="src-btn">▲ Drive</a>
+          <a href="#" class="src-btn">◆ Mega</a>
+          <a href="#" class="src-btn">▣ OneDrive</a>
+          <a href="#" class="src-btn">⬡ Torrent</a>
+        </div>
+      </div>
+    </div>
+    <!-- ==========================================
+         PARTIDO FIN — Arsenal vs Liverpool
+         ========================================== -->
+
+  </div><!-- /cards recientes -->
+
+
+  <!-- =============================================
+       SEPARADOR: SEMANA PASADA
+       Cambiá el texto para separar por fecha
+       ============================================= -->
+  <div class="date-divider">Semana pasada</div>
+
+  <div class="cards">
+
+    <!-- ==========================================
+         PARTIDO INICIO — Boca vs Flamengo
+         ========================================== -->
+    <div class="card" data-comp="libertadores">
+      <div class="card-left">
+        <div class="match-header">
+          <span class="comp-badge" style="color:#c084fc;">⬡ Libertadores · G3</span>
+          <span class="dot"></span>
+          <span class="match-date">9 Abr 2025</span>
+        </div>
+        <div class="teams-row">
+          <div class="team">
+            <div class="shield" style="background:#1a0500;">🟡</div>
+            <span class="team-name">Boca Juniors</span>
+          </div>
+          <span class="vs">VS</span>
+          <div class="team">
+            <div class="shield" style="background:#1a0000;">🔴</div>
+            <span class="team-name">Flamengo</span>
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="meta-item">◷ 101 min</div>
+          <div class="meta-item">▣ 6.9 GB · 1080p</div>
+          <div class="meta-item">▣ 2.6 GB · 720p</div>
+        </div>
+      </div>
+      <div class="card-right">
+        <div class="quality-row">
+          <a href="#" class="q-btn hq">1080p</a>
+          <a href="#" class="q-btn">720p</a>
+          <a href="#" class="q-btn">480p</a>
+        </div>
+        <div class="source-row">
+          <a href="#" class="src-btn">▲ Drive</a>
+          <a href="#" class="src-btn">◆ Mega</a>
+          <a href="#" class="src-btn">⬡ Torrent</a>
+        </div>
+      </div>
+    </div>
+    <!-- ==========================================
+         PARTIDO FIN — Boca vs Flamengo
+         ========================================== -->
+
+    <!-- =============================================
+         PEGÁ AQUÍ LOS PARTIDOS NUEVOS DE ESTA SECCIÓN
+         ============================================= -->
+
+  </div><!-- /cards semana pasada -->
+
+
+  <!-- =============================================
+       CÓMO AGREGAR UNA SECCIÓN NUEVA:
+
+       1. Copiá el bloque <div class="date-divider">
+          y cambiá el texto (ej: "Hace dos semanas")
+
+       2. Copiá el bloque <div class="cards">...</div>
+          y pegalo debajo del date-divider
+
+       3. Dentro del nuevo bloque, pegá tus partidos
+          usando la estructura de PARTIDO INICIO/FIN
+       ============================================= -->
+
+
+  <div class="load-more">
+    <button class="load-more-btn">Cargar más partidos</button>
+  </div>
+
+  <!-- =============================================
+       JAVASCRIPT — Filtros por competición
+       ============================================= -->
+  <script>
+    const pills = document.querySelectorAll('.pill');
+
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        // Activar pill seleccionada
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        const filter = pill.dataset.filter;
+        const cards  = document.querySelectorAll('.card');
+
+        cards.forEach(card => {
+          if (filter === 'all' || card.dataset.comp === filter) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
