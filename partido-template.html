@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalVault — Partido</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d0d0f;
+      --bg2:     #111114;
+      --bg3:     #151518;
+      --border:  #1e1e22;
+      --border2: #2a2a30;
+      --text:    #e8e6e0;
+      --text2:   #888;
+      --text3:   #444;
+      --accent:  #4ade80;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body:    'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ─── HEADER ─── */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { font-family: var(--font-display); font-size: 24px; letter-spacing: 4px; color: #fff; }
+    .logo span { color: var(--accent); }
+    .back-btn {
+      font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--text3); cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: var(--text2); }
+
+    /* ─── HERO / BANNER ───────────────────────────────────────────────────
+       ZONA DE EDICIÓN VISUAL:
+       Reemplazá el background-image con la URL de tu captura/imagen.
+       Podés usar una imagen local: url('img/madrid-city.jpg')
+       o una URL externa: url('https://...')
+       ─────────────────────────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      height: 340px;
+      background-color: var(--bg2);
+      background-image: url(''); /* ← TU IMAGEN AQUÍ */
+      background-size: cover;
+      background-position: center top;
+      display: flex; align-items: flex-end;
+      overflow: hidden;
+    }
+
+    /* fade bottom sobre la imagen */
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(13,13,15,0.1) 0%, rgba(13,13,15,0.7) 60%, #0d0d0f 100%);
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      width: 100%;
+      padding: 0 32px 32px;
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+    }
+
+    .match-identity {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .comp-badge {
+      font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+      font-weight: 500;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    .teams-display {
+      display: flex; align-items: center; gap: 20px;
+    }
+
+    .team-block {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+
+    /* ESCUDO:
+       Por defecto muestra un placeholder con las iniciales.
+       Para reemplazarlo con imagen, cambiá el contenido del .shield por:
+       <img src="URL_O_RUTA" style="width:100%;height:100%;object-fit:contain;">
+       y quitá el fondo de color. */
+    .shield-lg {
+      width: 52px; height: 52px;
+      border-radius: 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      overflow: hidden;
+    }
+    .shield-lg img { width: 100%; height: 100%; object-fit: contain; }
+
+    .team-name-lg {
+      font-size: 13px; font-weight: 500; color: #ccc;
+      white-space: nowrap;
+    }
+
+    .vs-lg {
+      font-family: var(--font-display);
+      font-size: 36px; letter-spacing: 4px;
+      color: var(--border2);
+      padding: 0 8px;
+      align-self: center;
+    }
+
+    .hero-meta {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+    }
+    .hero-date { font-size: 11px; color: var(--text3); letter-spacing: 0.5px; }
+    .new-badge {
+      font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.2);
+      padding: 3px 10px; border-radius: 4px; font-weight: 500;
+    }
+
+    /* ─── CUERPO ─── */
+    .body-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+      display: flex; flex-direction: column; gap: 32px;
+    }
+
+    /* ─── DESCRIPCIÓN (editable vía JSON) ──────────────────────────────
+       El objeto PARTIDO_DATA al final del archivo controla todo este bloque.
+       Solo tocás los datos, nunca el HTML.
+       ─────────────────────────────────────────────────────────────────── */
+    .desc-section { display: flex; flex-direction: column; gap: 6px; }
+
+    .section-label {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text3); font-weight: 500; margin-bottom: 4px;
+    }
+
+    .desc-text {
+      font-size: 14px; color: var(--text2); line-height: 1.8;
+    }
+
+    /* ─── STATS GRID ─── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .stat-cell {
+      background: var(--bg2);
+      padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); font-weight: 500; }
+    .stat-value { font-size: 16px; font-weight: 500; color: var(--text); }
+
+    /* ─── ETIQUETAS (goles, tarjetas, etc.) ─── */
+    .tags-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px; letter-spacing: 0.5px;
+      padding: 4px 12px; border-radius: 20px;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+    }
+    .tag.highlight { border-color: rgba(74,222,128,0.3); color: var(--accent); background: rgba(74,222,128,0.05); }
+
+    /* ─── ACORDEÓN (secciones expandibles) ─── */
+    .accordion { display: flex; flex-direction: column; gap: 1px; }
+
+    .acc-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .acc-header {
+      width: 100%; background: transparent;
+      border: none; cursor: pointer;
+      padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-body); font-size: 13px; font-weight: 500;
+      color: var(--text2); text-align: left;
+      transition: color 0.15s;
+    }
+    .acc-header:hover { color: var(--text); }
+    .acc-header.open  { color: var(--text); }
+
+    .acc-arrow {
+      font-size: 10px; color: var(--text3);
+      transition: transform 0.2s;
+    }
+    .acc-header.open .acc-arrow { transform: rotate(180deg); }
+
+    .acc-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.2s;
+      padding: 0 18px;
+    }
+    .acc-body.open {
+      max-height: 600px;
+      padding: 0 18px 16px;
+    }
+
+    .acc-body p   { font-size: 13px; color: var(--text2); line-height: 1.8; margin-bottom: 8px; }
+    .acc-body p:last-child { margin-bottom: 0; }
+
+    .acc-body ul  { padding-left: 16px; }
+    .acc-body li  { font-size: 13px; color: var(--text2); line-height: 1.9; }
+    .acc-body li::marker { color: var(--accent); }
+
+    /* ─── ZONA DE LINKS / PREMIUM ──────────────────────────────────────
+       Dos modos:
+         free    → muestra los links directamente
+         premium → muestra el botón de suscripción
+       Controlado desde PARTIDO_DATA.links.tipo
+       ─────────────────────────────────────────────────────────────────── */
+    .links-section {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .links-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .links-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); font-weight: 500; }
+    .links-badge-free    { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); padding: 2px 8px; border-radius: 4px; }
+    .links-badge-premium { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #f59e0b; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); padding: 2px 8px; border-radius: 4px; }
+
+    /* Links grilla */
+    .links-grid {
+      padding: 20px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .link-group-label {
+      font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--text3); font-weight: 500; margin-bottom: 8px;
+    }
+
+    .link-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .q-btn {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+      padding: 7px 14px; border-radius: 6px;
+      border: 1px solid var(--border2); color: var(--text2);
+      background: transparent; cursor: pointer;
+      transition: all 0.12s; font-family: var(--font-body);
+    }
+    .q-btn:hover  { border-color: var(--accent); color: var(--accent); }
+    .q-btn.hq     { border-color: #3a3a42; color: #aaa; }
+    .q-btn.hq:hover { border-color: var(--accent); color: var(--accent); }
+
+    .src-btn {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.3px;
+      padding: 7px 14px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text3); cursor: pointer;
+      transition: all 0.12s; font-family: var(--font-body);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .src-btn:hover { border-color: var(--border2); color: var(--text2); background: var(--bg2); }
+
+    /* Premium block */
+    .premium-block {
+      padding: 32px 20px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 16px; text-align: center;
+    }
+
+    .premium-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    .premium-title { font-size: 15px; font-weight: 500; color: var(--text); }
+    .premium-desc  { font-size: 13px; color: var(--text3); max-width: 360px; line-height: 1.7; }
+
+    .premium-cta {
+      margin-top: 4px;
+      display: inline-block;
+      font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 11px 28px; border-radius: 6px;
+      background: #f59e0b; color: #000;
+      cursor: pointer; transition: opacity 0.15s;
+      font-family: var(--font-body);
+    }
+    .premium-cta:hover { opacity: 0.88; }
+
+    .premium-note { font-size: 10px; color: var(--text3); letter-spacing: 0.3px; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 600px) {
+      .header     { padding: 16px 20px; }
+      .hero       { height: 280px; }
+      .hero-content { padding: 0 20px 24px; flex-direction: column; align-items: flex-start; gap: 12px; }
+      .body-wrap  { padding: 28px 20px 60px; }
+      .vs-lg      { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <a href="goalvault.html" class="back-btn">← Volver</a>
+    <div class="logo">GOAL<span>VAULT</span></div>
+    <div style="width:80px;"></div>
+  </header>
+
+  <!-- HERO — editá la imagen en el CSS (.hero background-image) -->
+  <div class="hero" id="hero">
+    <div class="hero-content">
+      <div class="match-identity">
+        <span class="comp-badge" id="hero-comp"></span>
+        <div class="teams-display">
+          <div class="team-block">
+            <div class="shield-lg" id="shield-local"></div>
+            <span class="team-name-lg" id="name-local"></span>
+          </div>
+          <span class="vs-lg">VS</span>
+          <div class="team-block">
+            <div class="shield-lg" id="shield-visita"></div>
+            <span class="team-name-lg" id="name-visita"></span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-meta">
+        <span class="hero-date" id="hero-date"></span>
+        <span class="new-badge" id="hero-badge" style="display:none;">Nuevo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUERPO -->
+  <div class="body-wrap">
+
+    <!-- DESCRIPCIÓN -->
+    <div class="desc-section">
+      <div class="section-label">Descripción</div>
+      <p class="desc-text" id="descripcion"></p>
+    </div>
+
+    <!-- STATS -->
+    <div>
+      <div class="section-label">Ficha técnica</div>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+
+    <!-- ETIQUETAS -->
+    <div>
+      <div class="section-label">Highlights</div>
+      <div class="tags-row" id="tags-row"></div>
+    </div>
+
+    <!-- ACORDEÓN -->
+    <div>
+      <div class="section-label" style="margin-bottom:10px;">Más info</div>
+      <div class="accordion" id="accordion"></div>
+    </div>
+
+    <!-- LINKS / PREMIUM -->
+    <div class="links-section" id="links-section">
+      <div class="links-header">
+        <span class="links-title">Descargas</span>
+        <span id="links-badge"></span>
+      </div>
+      <div id="links-body"></div>
+    </div>
+
+  </div><!-- /body-wrap -->
+
+
+  <!-- =================================================================
+       ✏️  DATOS DEL PARTIDO — SOLO EDITÁ ESTE OBJETO
+       =================================================================
+
+       Estructura completa con comentarios explicativos.
+       Cambiá los valores, no toques el JS de abajo.
+       ================================================================= -->
+  <script>
+  const PARTIDO_DATA = {
+
+    // ── HERO ──────────────────────────────────────────────────────────
+    hero: {
+      imagen: "",           // URL o ruta local de la imagen de fondo del banner
+                            // Ejemplo: "img/madrid-city.jpg"
+                            // Dejar vacío para fondo negro.
+
+      competicion: "UCL · Cuartos de Final",
+      color_comp: "#4ade80",  // Color del texto de competición
+                              // Champions  → "#4ade80"
+                              // La Liga    → "#f59e0b"
+                              // Premier    → "#60a5fa"
+                              // Libertadores → "#c084fc"
+                              // Serie A    → "#f87171"
+                              // Selecciones  → "#e2e8f0"
+
+      fecha: "15 Abr 2025",
+      es_nuevo: true,         // true → muestra la etiqueta "Nuevo"
+
+      local: {
+        nombre: "Real Madrid",
+        escudo: "",           // URL o ruta del escudo. Dejar vacío para placeholder.
+        emoji: "🔵"           // Solo se usa si escudo está vacío
+      },
+      visita: {
+        nombre: "Man City",
+        escudo: "",
+        emoji: "🟣"
+      }
+    },
+
+    // ── DESCRIPCIÓN ───────────────────────────────────────────────────
+    descripcion: "Un duelo histórico entre dos de los mejores equipos de Europa. El Real Madrid recibió al Manchester City en el Bernabéu en un partido de ida de cuartos de final donde no faltaron las emociones, las ocasiones claras y la intensidad propia de este tipo de eliminatorias.",
+
+    // ── STATS (ficha técnica) ─────────────────────────────────────────
+    // Agregá o quitá objetos { label, valor } según necesites.
+    stats: [
+      { label: "Duración",    valor: "95 min" },
+      { label: "Calidad máx", valor: "4K HDR" },
+      { label: "Tamaño 4K",   valor: "12.3 GB" },
+      { label: "Tamaño 1080", valor: "8.4 GB" },
+      { label: "Tamaño 720",  valor: "3.2 GB" },
+      { label: "Idioma",      valor: "Español" }
+    ],
+
+    // ── ETIQUETAS ─────────────────────────────────────────────────────
+    // Usá highlight: true para las más importantes (se ven en verde)
+    tags: [
+      { texto: "Doblete Vinicius",    highlight: true  },
+      { texto: "Remontada",           highlight: true  },
+      { texto: "Penales Haaland",     highlight: false },
+      { texto: "Tarjeta roja min 67", highlight: false },
+      { texto: "VAR polémico",        highlight: false },
+      { texto: "Full match",          highlight: false }
+    ],
+
+    // ── ACORDEÓN (secciones expandibles) ─────────────────────────────
+    // Cada objeto es una sección. El contenido puede ser "texto" o "lista".
+    // tipo: "texto" → párrafos separados por \n
+    // tipo: "lista" → cada ítem es una entrada del array items[]
+    secciones: [
+      {
+        titulo: "Resumen del partido",
+        tipo: "texto",
+        contenido: "El Madrid dominó los primeros 20 minutos con un pressing alto que generó varias ocasiones. El City reaccionó tras el primer gol y empató con una jugada colectiva de primer nivel.\n\nLa segunda mitad fue completamente diferente: más abierta, con contra-ataques de ambos lados y la polémica del VAR en el minuto 67 que anuló un gol al City por fuera de juego milimétrico."
+      },
+      {
+        titulo: "Goles y asistencias",
+        tipo: "lista",
+        items: [
+          "⚽ Min 12 — Vinicius Jr (asistencia Bellingham)",
+          "⚽ Min 34 — Haaland (asistencia De Bruyne, penal)",
+          "⚽ Min 78 — Vinicius Jr (asistencia Rodrygo)",
+          "⚽ Min 90+3 — Rüdiger (cabezazo, córner)"
+        ]
+      },
+      {
+        titulo: "Calidad y formatos disponibles",
+        tipo: "lista",
+        items: [
+          "4K HDR — 12.3 GB — Transmisión DAZN original",
+          "1080p — 8.4 GB — Sin marcas de agua",
+          "720p — 3.2 GB — Versión ligera",
+          "480p — 1.1 GB — Solo para conexiones lentas"
+        ]
+      }
+    ],
+
+    // ── LINKS / DESCARGA ──────────────────────────────────────────────
+    links: {
+
+      // "free" → muestra los links directamente
+      // "premium" → muestra el botón de suscripción
+      tipo: "premium",
+
+      // Solo aplica si tipo === "premium"
+      premium: {
+        titulo: "Contenido para suscriptores",
+        descripcion: "Este partido está disponible exclusivamente para miembros. Accedé a todos los partidos en HD sin límites.",
+        boton_texto: "Ver en Patreon",
+        boton_url: "https://patreon.com/TU_CANAL",   // ← Cambiá esto
+        nota: "Acceso inmediato tras suscribirte"
+      },
+
+      // Solo aplica si tipo === "free"
+      // Cada objeto en calidades tiene { label, url, destacado }
+      // destacado: true → se muestra con estilo hq (más resaltado)
+      calidades: [
+        { label: "4K",    url: "#", destacado: true  },
+        { label: "1080p", url: "#", destacado: true  },
+        { label: "720p",  url: "#", destacado: false },
+        { label: "480p",  url: "#", destacado: false }
+      ],
+      // Cada objeto en servidores tiene { label, icono, url }
+      servidores: [
+        { label: "Drive",   icono: "▲", url: "#" },
+        { label: "Mega",    icono: "◆", url: "#" },
+        { label: "Torrent", icono: "⬡", url: "#" }
+      ]
+    }
+
+  };
+  // =================================================================
+  //  FIN DE PARTIDO_DATA — no toques nada después de esta línea
+  // =================================================================
+
+
+  // ── RENDER ──────────────────────────────────────────────────────────
+  (function render(d) {
+    const h = d.hero;
+
+    // Hero imagen
+    if (h.imagen) document.querySelector('.hero').style.backgroundImage = `url('${h.imagen}')`;
+
+    // Comp badge
+    const cb = document.getElementById('hero-comp');
+    cb.textContent = '⬡ ' + h.competicion;
+    cb.style.color = h.color_comp;
+
+    // Fecha y badge
+    document.getElementById('hero-date').textContent = h.fecha;
+    if (h.es_nuevo) document.getElementById('hero-badge').style.display = 'inline-block';
+
+    // Escudos
+    function renderShield(el, team) {
+      if (team.escudo) {
+        el.innerHTML = `<img src="${team.escudo}" alt="${team.nombre}">`;
+      } else {
+        el.textContent = team.emoji || '⚽';
+      }
+    }
+    renderShield(document.getElementById('shield-local'),  h.local);
+    renderShield(document.getElementById('shield-visita'), h.visita);
+    document.getElementById('name-local').textContent  = h.local.nombre;
+    document.getElementById('name-visita').textContent = h.visita.nombre;
+    document.title = `GoalVault — ${h.local.nombre} vs ${h.visita.nombre}`;
+
+    // Descripción
+    document.getElementById('descripcion').textContent = d.descripcion;
+
+    // Stats
+    const sg = document.getElementById('stats-grid');
+    d.stats.forEach(s => {
+      sg.innerHTML += `<div class="stat-cell"><span class="stat-label">${s.label}</span><span class="stat-value">${s.valor}</span></div>`;
+    });
+
+    // Tags
+    const tr = document.getElementById('tags-row');
+    d.tags.forEach(t => {
+      tr.innerHTML += `<span class="tag${t.highlight ? ' highlight' : ''}">${t.texto}</span>`;
+    });
+
+    // Acordeón
+    const ac = document.getElementById('accordion');
+    d.secciones.forEach((sec, i) => {
+      let bodyHTML = '';
+      if (sec.tipo === 'texto') {
+        sec.contenido.split('\n').filter(Boolean).forEach(p => { bodyHTML += `<p>${p}</p>`; });
+      } else {
+        bodyHTML = '<ul>' + sec.items.map(it => `<li>${it}</li>`).join('') + '</ul>';
+      }
+      ac.innerHTML += `
+        <div class="acc-item">
+          <button class="acc-header" onclick="toggleAcc(this)">
+            <span>${sec.titulo}</span>
+            <span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body">${bodyHTML}</div>
+        </div>`;
+    });
+
+    // Links
+    const lb = document.getElementById('links-badge');
+    const lbody = document.getElementById('links-body');
+
+    if (d.links.tipo === 'premium') {
+      lb.className = 'links-badge-premium';
+      lb.textContent = 'Premium';
+      const p = d.links.premium;
+      lbody.innerHTML = `
+        <div class="premium-block">
+          <div class="premium-icon">★</div>
+          <div class="premium-title">${p.titulo}</div>
+          <div class="premium-desc">${p.descripcion}</div>
+          <a href="${p.boton_url}" target="_blank" class="premium-cta">${p.boton_texto}</a>
+          <div class="premium-note">${p.nota}</div>
+        </div>`;
+    } else {
+      lb.className = 'links-badge-free';
+      lb.textContent = 'Gratis';
+      let html = '<div class="links-grid">';
+      html += '<div><div class="link-group-label">Calidad</div><div class="link-btns">';
+      d.links.calidades.forEach(c => {
+        html += `<a href="${c.url}" class="q-btn${c.destacado ? ' hq' : ''}">${c.label}</a>`;
+      });
+      html += '</div></div>';
+      html += '<div><div class="link-group-label">Servidor</div><div class="link-btns">';
+      d.links.servidores.forEach(s => {
+        html += `<a href="${s.url}" class="src-btn">${s.icono} ${s.label}</a>`;
+      });
+      html += '</div></div></div>';
+      lbody.innerHTML = html;
+    }
+
+  })(PARTIDO_DATA);
+
+  function toggleAcc(btn) {
+    btn.classList.toggle('open');
+    const body = btn.nextElementSibling;
+    body.classList.toggle('open');
+  }
+  </script>
+
+</body>
+</html>
